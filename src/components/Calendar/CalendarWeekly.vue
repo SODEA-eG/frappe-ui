@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-1 flex-col overflow-y-auto isolate">
+  <div class="flex flex-1 flex-col overflow-y-auto">
     <!-- Day List -->
     <div class="flex border-b-[1px]">
       <div class="w-20"></div>
@@ -32,10 +32,16 @@
           :is="showCollapsable ? Button : 'div'"
           :class="{ '!pl-1.5 pr-1 py-1 !gap-1': showCollapsable }"
           variant="ghost"
-          :iconRight="showCollapsable ? (isCollapsed ? 'chevron-down' : 'chevron-up') : ''"
+          :iconRight="
+            showCollapsable ? (isCollapsed ? 'chevron-down' : 'chevron-up') : ''
+          "
           @click="showCollapsable && (isCollapsed = !isCollapsed)"
         >
-          <div class="text-sm text-ink-gray-6 h-[29px] inline-flex items-center">All day</div>
+          <div
+            class="text-sm text-ink-gray-6 h-[29px] inline-flex items-center"
+          >
+            All day
+          </div>
         </component>
       </div>
       <div class="grid w-full grid-cols-7 overflow-hidden">
@@ -52,21 +58,22 @@
               }
             "
           >
-            <CalendarWeekDayEvent
+            <CalendarEvent
               v-for="(calendarEvent, idx) in !showCollapsable || !isCollapsed
                 ? fullDayEvents[parseDate(date)]
                 : fullDayEvents[parseDate(date)]?.slice(0, 2)"
+              class="w-[90%] cursor-pointer"
               :event="{ ...calendarEvent, idx }"
               :key="calendarEvent.id"
               :date="date"
               @click.stop
-			  >
-                <template #event-popover-content="slotProps">
-                  <slot name="event-popover-content" v-bind="slotProps" />
-                </template>
-              </CalendarWeekDayEvent>
+            />
             <Button
-              v-if="showCollapsable && isCollapsed && fullDayEvents[parseDate(date)]?.length > 2"
+              v-if="
+                showCollapsable &&
+                isCollapsed &&
+                fullDayEvents[parseDate(date)]?.length > 2
+              "
               :label="fullDayEvents[parseDate(date)]?.length - 2 + ' more'"
               variant="ghost"
               class="w-fit text-sm !py-0.5 !h-5 !justify-start cursor-pointer"
@@ -93,7 +100,7 @@
         </div>
 
         <!-- Grid -->
-        <div class="relative z-0 flex w-full flex-col">
+        <div class="relative flex w-full flex-col">
           <!-- time events => not full day events => overflow-scroll here -->
           <div
             class="w-[calc(100%-4px)] h-px z-[2] left-0.5 mt-[0.5px] bg-[#F79596] absolute"
@@ -106,11 +113,12 @@
               class="relative w-full border-outline-gray-1"
               :class="[
                 idx === 0 && 'calendar-column border-l-[1px]',
-                config.noBorder && idx === weeklyDates.length - 1 ? '' : 'border-r-[1px]',
+                config.noBorder && idx === weeklyDates.length - 1
+                  ? ''
+                  : 'border-r-[1px]',
                 isWeekend(date, config) && 'bg-surface-gray-1',
               ]"
               :data-date-attr="date"
-              data-time-grid
             >
               <!-- Time Grid -->
               <div
@@ -118,7 +126,9 @@
                 v-for="(time, i) in timeArray"
                 :key="time"
                 :data-time-attr="i == 0 ? '' : time"
-                @click.prevent="calendarActions.handleCellClick($event, date, time)"
+                @click.prevent="
+                  calendarActions.handleCellClick($event, date, time)
+                "
               >
                 <div
                   class="border-outline-gray-1 w-full"
@@ -128,16 +138,13 @@
               </div>
 
               <!-- Calendar Events populations  -->
-              <CalendarWeekDayEvent
+              <CalendarEvent
                 v-for="(calendarEvent, idx) in timedEvents[parseDate(date)]"
+                class="absolute mb-2 w-[90%] cursor-pointer"
                 :event="calendarEvent"
                 :key="calendarEvent.id"
                 :date="date"
-              >
-                <template #event-popover-content="slotProps">
-                  <slot name="event-popover-content" v-bind="slotProps" />
-                </template>
-              </CalendarWeekDayEvent>
+              />
 
               <!-- Current time Marker  -->
               <CalendarTimeMarker :date="date" />
@@ -150,6 +157,7 @@
 </template>
 <script setup>
 import { ref, onMounted, watch, computed, inject } from 'vue'
+import CalendarEvent from './CalendarEvent.vue'
 import CalendarTimeMarker from './CalendarTimeMarker.vue'
 import {
   twelveHoursFormat,
@@ -162,7 +170,6 @@ import {
 
 import { Button } from '../Button'
 import useCalendarData from './composables/useCalendarData'
-import CalendarWeekDayEvent from './CalendarWeekDayEvent.vue'
 
 const props = defineProps({
   events: {
@@ -185,12 +192,18 @@ const isCollapsed = ref(true)
 const hourHeight = props.config.hourHeight
 const minuteHeight = hourHeight / 60
 
-const timeArray = props.config.timeFormat == '24h' ? twentyFourHoursFormat : twelveHoursFormat
+const timeArray =
+  props.config.timeFormat == '24h' ? twentyFourHoursFormat : twelveHoursFormat
 
-const timedEvents = computed(() => useCalendarData(props.events).timedEvents.value)
-const fullDayEvents = computed(() => useCalendarData(props.events).fullDayEvents.value)
+const timedEvents = computed(
+  () => useCalendarData(props.events).timedEvents.value,
+)
+const fullDayEvents = computed(
+  () => useCalendarData(props.events).fullDayEvents.value,
+)
 
-const isToday = (date) => new Date(date).toDateString() === new Date().toDateString()
+const isToday = (date) =>
+  new Date(date).toDateString() === new Date().toDateString()
 
 const currentTime = computed(() => {
   let d = new Date()
@@ -225,7 +238,10 @@ function getFullDayEventsCount(eventsObject) {
 }
 
 function setFullDayEventsHeight(eventsObject, weeklyDates) {
-  let currentWeekEvents = getFullDayEventsInCurrentWeek(eventsObject, weeklyDates)
+  let currentWeekEvents = getFullDayEventsInCurrentWeek(
+    eventsObject,
+    weeklyDates,
+  )
   let maxEvents = getFullDayEventsCount(currentWeekEvents)
   if (maxEvents > 3) {
     showCollapsable.value = true
@@ -256,3 +272,18 @@ watch(
   },
 )
 </script>
+
+<style>
+.calendar-column {
+  position: relative;
+}
+
+.calendar-column ::before {
+  content: attr(data-time-attr);
+  position: absolute;
+  left: -45px;
+  top: -9px;
+  font-size: 12px;
+  font-weight: 400;
+}
+</style>

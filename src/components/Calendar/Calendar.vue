@@ -30,7 +30,7 @@
                 variant="ghost"
                 class="text-lg font-medium text-ink-gray-7"
                 :label="currentMonthYear"
-                iconRight="lucide-chevron-down"
+                iconRight="chevron-down"
                 @click="togglePopover"
               />
             </template>
@@ -41,9 +41,9 @@
         <div class="flex gap-x-1">
           <!-- Increment and Decrement Button-->
 
-          <Button @click="decrement" variant="ghost" icon="lucide-chevron-left" />
+          <Button @click="decrement" variant="ghost" icon="chevron-left" />
           <Button label="Today" @click="setCalendarDate()" variant="ghost" />
-          <Button @click="increment" variant="ghost" icon="lucide-chevron-right" />
+          <Button @click="increment" variant="ghost" icon="chevron-right" />
 
           <!--  View change button, default is months or can be set via props!  -->
           <TabButtons
@@ -62,22 +62,14 @@
       :currentMonthDates="currentMonthDates"
       :config="overrideConfig"
       @setCurrentDate="(d) => updateCurrentDate(d)"
-    >
-      <template #event-popover-content="slotProps">
-        <slot name="event-popover-content" v-bind="slotProps" />
-      </template>
-    </CalendarMonthly>
+    />
 
     <CalendarWeekly
       v-else-if="activeView === 'Week'"
       :events="events"
       :weeklyDates="datesInWeeks[week]"
       :config="overrideConfig"
-    >
-      <template #event-popover-content="slotProps">
-        <slot name="event-popover-content" v-bind="slotProps" />
-      </template>
-    </CalendarWeekly>
+    />
 
     <CalendarDaily
       v-else-if="activeView === 'Day'"
@@ -90,9 +82,6 @@
           name="daily-header"
           v-bind="{ parseDateWithDay, currentDate, fullDay }"
         />
-      </template>
-      <template #event-popover-content="slotProps">
-        <slot name="event-popover-content" v-bind="slotProps" />
       </template>
     </CalendarDaily>
 
@@ -132,7 +121,6 @@ import CalendarWeekly from './CalendarWeekly.vue'
 import CalendarDaily from './CalendarDaily.vue'
 import NewEventModal from './NewEventModal.vue'
 import useEventModal from './composables/useEventModal'
-import { isAnyPopoverOpen } from './useEventBase.js'
 
 const props = defineProps({
   events: {
@@ -181,9 +169,6 @@ function updateActiveView(value, d, isPreviousMonth, isNextMonth) {
     date.value = findIndexOfDate(d)
     isPreviousMonth && decrementMonth()
     isNextMonth && incrementMonth()
-  }
-  if (value === 'Week') {
-    week.value = findCurrentWeek(currentMonthDates.value[date.value])
   }
 }
 
@@ -253,12 +238,7 @@ function handleShortcuts(e) {
 
 provide('activeView', activeView)
 provide('config', overrideConfig)
-
-watch(activeView, (value) => {
-  if (value === 'Week') {
-    week.value = findCurrentWeek(currentMonthDates.value[date.value])
-  }
-})
+provide('activeEventId', computed(() => props.config?.activeEventId || ''))
 
 const parseEvents = computed(() => {
   return (
@@ -342,11 +322,6 @@ function openModal(data) {
 }
 
 function handleCellClick(e, date, time = '', isFullDay = false) {
-  if (isAnyPopoverOpen.value) {
-	isAnyPopoverOpen.value = false
-    return
-  }
-
   const data = {
     e,
     view: activeView.value,
@@ -409,34 +384,6 @@ let date = ref(
   ),
 )
 let selectedDay = computed(() => currentMonthDates.value[date.value])
-
-function computeCurrentDay() {
-  if (activeView.value === 'Week') {
-    const weekDates = datesInWeeks.value[week.value] || []
-    return weekDates[0] ? weekDates[0].getDate() : null
-  }
-  if (activeView.value === 'Day') {
-    const day = selectedDay.value
-    return day ? new Date(day).getDate() : null
-  }
-  return 1
-}
-
-let currentDay = ref(computeCurrentDay())
-let _lastInternalDay = currentDay.value
-
-watch([activeView, week, date], () => {
-  const val = computeCurrentDay()
-  _lastInternalDay = val
-  currentDay.value = val
-})
-
-watch(currentDay, (newVal) => {
-  if (newVal == null) return
-  if (newVal === _lastInternalDay) return
-  const target = new Date(currentYear.value, currentMonth.value, newVal)
-  setCalendarDate(target)
-})
 
 function updateCurrentDate(d) {
   activeView.value = 'Day'
@@ -722,7 +669,6 @@ defineExpose({
   currentMonthYear,
   currentYear,
   currentMonth,
-  currentDay,
   enabledModes,
   activeView,
   decrement,

@@ -29,19 +29,16 @@
           calendarActions.handleCellClick($event, currentDate, '', true)
         "
       >
-        <CalendarWeekDayEvent
+        <CalendarEvent
           v-for="(calendarEvent, idx) in !showCollapsable || !isCollapsed
             ? dayFullDayEvents
             : dayFullDayEvents.slice(0, 4)"
+          class="w-[21%] cursor-pointer"
           :event="{ ...calendarEvent, idx }"
           :key="calendarEvent.id"
           :date="currentDate"
           @click.stop
-        >
-          <template #event-popover-content="slotProps">
-            <slot name="event-popover-content" v-bind="slotProps" />
-          </template>
-        </CalendarWeekDayEvent>
+        />
         <Button
           v-if="showCollapsable && isCollapsed && dayFullDayEvents.length > 4"
           :label="dayFullDayEvents.length - 4 + ' more'"
@@ -73,7 +70,6 @@
           <div
             class="calendar-column relative border-l-[1px] border-outline-gray-1"
             :class="[config.noBorder ? '' : ' border-r-[1px]']"
-            data-time-grid
           >
             <!-- Day Grid -->
             <div
@@ -91,18 +87,15 @@
                 :style="{ height: `${hourHeight}px` }"
               />
             </div>
-            <CalendarWeekDayEvent
+            <CalendarEvent
               v-for="(calendarEvent, idx) in timedEvents[
                 parseDate(currentDate)
               ]"
+              class="absolute mb-2 cursor-pointer"
               :event="calendarEvent"
               :key="calendarEvent.id"
               :date="currentDate"
-            >
-			  <template #event-popover-content="slotProps">
-                <slot name="event-popover-content" v-bind="slotProps" />
-			  </template>
-            </CalendarWeekDayEvent>
+            />
             <!-- Current time Marker -->
             <CalendarTimeMarker :date="currentDate" />
           </div>
@@ -114,15 +107,16 @@
 
 <script setup>
 import { computed, inject, onMounted, ref, watch } from 'vue'
+import CalendarEvent from './CalendarEvent.vue'
 import CalendarTimeMarker from './CalendarTimeMarker.vue'
 import { Button } from '../Button'
 import {
   parseDate,
+  parseDateWithDay,
   twelveHoursFormat,
   twentyFourHoursFormat,
 } from './calendarUtils'
 import useCalendarData from './composables/useCalendarData'
-import CalendarWeekDayEvent from './CalendarWeekDayEvent.vue'
 
 const props = defineProps({
   events: {

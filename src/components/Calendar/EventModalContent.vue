@@ -1,14 +1,25 @@
 <template>
-  <div class="w-80 rounded-lg bg-surface-modal text-ink-gray-8 p-4">
+  <div
+    class="w-80 rounded bg-surface-modal text-ink-gray-8 p-4 shadow"
+    @click.stop
+  >
     <div class="flex flex-row-reverse gap-2">
       <span class="cursor-pointer" @click.stop="$emit('close')">
-        <span class="lucide-x size-4" aria-hidden="true" />
+        <FeatherIcon name="x" class="h-4 w-4" />
       </span>
-      <span v-if="isEditMode" class="cursor-pointer" @click.stop="$emit('edit')">
-        <span class="lucide-edit-2 size-4" aria-hidden="true" />
+      <span
+        v-if="isEditMode"
+        class="cursor-pointer"
+        @click.stop="$emit('edit')"
+      >
+        <FeatherIcon name="edit-2" class="h-4 w-4" />
       </span>
-      <span v-if="isEditMode" class="cursor-pointer" @click.stop="$emit('delete')">
-        <span class="lucide-trash-2 size-4" aria-hidden="true" />
+      <span
+        v-if="isEditMode"
+        class="cursor-pointer"
+        @click.stop="$emit('delete')"
+      >
+        <FeatherIcon name="trash-2" class="h-4 w-4" />
       </span>
     </div>
     <div class="flex flex-col gap-5">
@@ -17,25 +28,28 @@
       </div>
       <div class="flex flex-col gap-4">
         <div class="flex items-center gap-2">
-          <span class="lucide-calendar size-4" aria-hidden="true" />
+          <FeatherIcon name="calendar" class="h-4 w-4" />
           <span class="text-sm font-normal">
             {{ parseDateEventPopupFormat(date) }}
           </span>
         </div>
         <div class="flex items-center gap-2" v-if="calendarEvent.participant">
-          <span class="lucide-user size-4" aria-hidden="true" />
+          <FeatherIcon name="user" class="h-4 w-4" />
           <span class="text-sm font-normal">
             {{ calendarEvent.participant }}
           </span>
         </div>
-        <div class="flex items-center gap-2" v-if="calendarEvent.fromTime && calendarEvent.toTime">
-          <span class="lucide-clock size-4" aria-hidden="true" />
+        <div
+          class="flex items-center gap-2"
+          v-if="calendarEvent.fromTime && calendarEvent.toTime"
+        >
+          <FeatherIcon name="clock" class="h-4 w-4" />
           <span class="text-sm font-normal">
             {{ calendarEvent.fromTime }} - {{ calendarEvent.toTime }}
           </span>
         </div>
         <div class="flex items-center gap-2" v-if="calendarEvent.venue">
-          <span class="lucide-map-pin size-4" aria-hidden="true" />
+          <FeatherIcon name="map-pin" class="h-4 w-4" />
           <span class="text-sm font-normal">
             {{ calendarEvent.venue }}
           </span>
@@ -45,6 +59,8 @@
   </div>
 </template>
 <script setup>
+import FeatherIcon from '../FeatherIcon.vue'
+
 import { parseDateEventPopupFormat } from './calendarUtils'
 
 const props = defineProps({
@@ -55,3 +71,4 @@ const props = defineProps({
 
 const emits = defineEmits(['close', 'edit', 'delete'])
 </script>
+<style></style>

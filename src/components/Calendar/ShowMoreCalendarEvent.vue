@@ -1,26 +1,22 @@
 <template>
-  <CalendarMonthEvent
+  <CalendarEvent
     v-for="event in events.slice(0, 2)"
     :key="event.id"
     :event="event"
     :date="date"
     class="mb-1 cursor-pointer"
     v-bind="$attrs"
-  >
-    <template #event-popover-content="slotProps">
-      <slot name="event-popover-content" v-bind="slotProps" />
-    </template>
-  </CalendarMonthEvent>
-  <button
+  />
+  <span
     v-if="totalEventsCount > 2"
-    class="w-fit rounded-sm p-px px-2 mx-px text-base font-medium text-ink-gray-6 hover:bg-surface-gray-1"
-    @click.stop="emit('showMoreEvents')"
+    class="w-fit rounded-sm p-px px-2 mx-px text-base font-medium text-ink-gray-6 hover:cursor-pointer hover:bg-surface-gray-1"
+    @click="emit('showMoreEvents')"
   >
     {{ totalEventsCount - 2 }} more
-  </button>
+  </span>
 </template>
 <script setup>
-import CalendarMonthEvent from './CalendarMonthEvent.vue'
+import CalendarEvent from './CalendarEvent.vue'
 
 const props = defineProps({
   events: {
@@ -28,7 +24,7 @@ const props = defineProps({
     required: true,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
   totalEventsCount: {
@@ -39,3 +35,4 @@ const props = defineProps({
 
 const emit = defineEmits(['showMoreEvents'])
 </script>
+<style></style>
